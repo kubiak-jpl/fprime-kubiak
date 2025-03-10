@@ -46,8 +46,11 @@ namespace Svc {
       // Tests
       // ----------------------------------------------------------------------
 
-      //! To do
-      void toDo();
+      //! Zero Epoch
+      void zeroEpochTest();
+
+      //! Non-zero Epoch
+      void offsetEpochTest();
 
     private:
 

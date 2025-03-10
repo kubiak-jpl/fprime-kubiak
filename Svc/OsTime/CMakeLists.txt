@@ -23,4 +23,5 @@ set(UT_SOURCE_FILES
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTester.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTestMain.cpp"
 )
+choose_fprime_implementation(Os/RawTime Os/RawTime/Posix)
 register_fprime_ut()

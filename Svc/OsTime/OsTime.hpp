@@ -45,6 +45,7 @@ class OsTime final : public OsTimeComponentBase {
 
     Fw::Time m_epoch_fw_time;
     Os::RawTime m_epoch_os_time;
+    bool m_epoch_valid;
 };
 
 }  // namespace Svc

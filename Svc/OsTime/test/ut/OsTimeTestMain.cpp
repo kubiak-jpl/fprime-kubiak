@@ -6,9 +6,14 @@
 
 #include "OsTimeTester.hpp"
 
-TEST(Nominal, toDo) {
+TEST(Nominal, ZeroEpochTest) {
   Svc::OsTimeTester tester;
-  tester.toDo();
+  tester.zeroEpochTest();
+}
+
+TEST(Nominal, OffsetEpochTest) {
+  Svc::OsTimeTester tester;
+  tester.offsetEpochTest();
 }
 
 int main(int argc, char** argv) {
