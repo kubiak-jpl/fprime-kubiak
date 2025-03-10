@@ -97,4 +97,22 @@ namespace Svc {
       ASSERT_NEAR(start_time_d + 0.2, time_200, 0.1);
   }
 
+  void OsTimeTester ::
+    noEpochTest()
+  {
+      // 0 ms
+      Fw::Time time_0ms;
+      invoke_to_timeGetPort(0, time_0ms);
+      ASSERT_EQ(time_0ms, Fw::ZERO_TIME);
+
+      const std::chrono::milliseconds dur_200ms(200);
+
+      // 200 ms
+      std::this_thread::sleep_for(dur_200ms);
+      Fw::Time time_200ms;
+      invoke_to_timeGetPort(0, time_200ms);
+      ASSERT_EQ(time_200ms, Fw::ZERO_TIME);
+  }
+
+
 }

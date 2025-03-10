@@ -52,6 +52,9 @@ namespace Svc {
       //! Non-zero Epoch
       void offsetEpochTest();
 
+      //! No Epoch
+      void noEpochTest();
+
     private:
 
       // ----------------------------------------------------------------------
