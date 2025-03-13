@@ -11,6 +11,16 @@
 #include <chrono>
 #include <thread>
 
+#define TIMING_UB (1.5)
+#define ASSERT_TIMING_RAW(exp_base, exp_offset, act, ub_ratio) \
+{ \
+ASSERT_LT(exp_base + exp_offset, act); \
+ASSERT_GT(exp_base + (exp_offset * ub_ratio), act); \
+}
+
+#define ASSERT_TIMING(exp_base, exp_offset, act) ASSERT_TIMING_RAW(exp_base, exp_offset, act, TIMING_UB)
+
+
 namespace Svc {
 
   // ----------------------------------------------------------------------
@@ -53,7 +63,7 @@ namespace Svc {
       ASSERT_NE(time_200ms, Fw::ZERO_TIME);
 
       const double time_200 = time_200ms.getSeconds() + (time_200ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(0.2, time_200, 0.1);
+      ASSERT_TIMING(0, 0.2, time_200);
 
       // 400 ms
       std::this_thread::sleep_for(dur_200ms);
@@ -62,7 +72,7 @@ namespace Svc {
       ASSERT_NE(time_400ms, Fw::ZERO_TIME);
 
       const double time_400 = time_400ms.getSeconds() + (time_400ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(0.4, time_400, 0.1);
+      ASSERT_TIMING(0, 0.4, time_400);
 
       // 600 ms
       std::this_thread::sleep_for(dur_200ms);
@@ -71,7 +81,7 @@ namespace Svc {
       ASSERT_NE(time_600ms, Fw::ZERO_TIME);
 
       const double time_600 = time_600ms.getSeconds() + (time_600ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(0.6, time_600, 0.1);
+      ASSERT_TIMING(0, 0.6, time_600);
 
   }
 
@@ -94,7 +104,7 @@ namespace Svc {
       ASSERT_NE(time_200ms, Fw::ZERO_TIME);
 
       const double time_200 = time_200ms.getSeconds() + (time_200ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(start_time_d + 0.2, time_200, 0.1);
+      ASSERT_TIMING(start_time_d, 0.2, time_200);
   }
 
   void OsTimeTester ::
@@ -131,7 +141,7 @@ namespace Svc {
       ASSERT_NE(time_200ms, Fw::ZERO_TIME);
 
       const double time_200 = time_200ms.getSeconds() + (time_200ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(0.2, time_200, 0.1);
+      ASSERT_TIMING(0, 0.2, time_200);
 
       // 400 ms
       std::this_thread::sleep_for(dur_200ms);
@@ -140,7 +150,7 @@ namespace Svc {
       ASSERT_NE(time_400ms, Fw::ZERO_TIME);
 
       const double time_400 = time_400ms.getSeconds() + (time_400ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(0.4, time_400, 0.1);
+      ASSERT_TIMING(0, 0.4, time_400);
 
       // Change time base
       const Fw::Time new_base(TB_WORKSTATION_TIME, 7, 1234, 0);
@@ -156,7 +166,9 @@ namespace Svc {
       ASSERT_EQ(time_400ms_2.getContext(), 7);
 
       const double time_400_2 = time_400ms_2.getSeconds() + (time_400ms_2.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(1234.0, time_400_2, 0.1);
+      //ASSERT_TIMING(1234.0, 0, time_400_2);
+      ASSERT_LT(1234.0, time_400_2);
+      ASSERT_GT(1234.0 + 0.1, time_400_2);
 
       // 600 ms
       std::this_thread::sleep_for(dur_200ms);
@@ -167,7 +179,7 @@ namespace Svc {
       ASSERT_EQ(time_600ms.getContext(), 7);
 
       const double time_600 = time_600ms.getSeconds() + (time_600ms.getUSeconds() / (1000.*1000.));
-      ASSERT_NEAR(1234.0 + 0.2, time_600, 0.1);
+      ASSERT_TIMING(1234.0, 0.2, time_600);
 
 
 
