@@ -55,6 +55,9 @@ namespace Svc {
       //! No Epoch
       void noEpochTest();
 
+      //! Update Epoch
+      void updateEpochTest();
+
     private:
 
       // ----------------------------------------------------------------------

@@ -114,5 +114,63 @@ namespace Svc {
       ASSERT_EQ(time_200ms, Fw::ZERO_TIME);
   }
 
+  void OsTimeTester ::
+    updateEpochTest()
+  {
+      Os::RawTime epoch_os_time;
+      Os::RawTime::Status os_stat = epoch_os_time.now();
+      ASSERT_EQ(os_stat, Os::RawTime::OP_OK);
+      component.set_epoch(Fw::ZERO_TIME, epoch_os_time);
+
+      const std::chrono::milliseconds dur_200ms(200);
+
+      // 200 ms
+      std::this_thread::sleep_for(dur_200ms);
+      Fw::Time time_200ms;
+      invoke_to_timeGetPort(0, time_200ms);
+      ASSERT_NE(time_200ms, Fw::ZERO_TIME);
+
+      const double time_200 = time_200ms.getSeconds() + (time_200ms.getUSeconds() / (1000.*1000.));
+      ASSERT_NEAR(0.2, time_200, 0.1);
+
+      // 400 ms
+      std::this_thread::sleep_for(dur_200ms);
+      Fw::Time time_400ms;
+      invoke_to_timeGetPort(0, time_400ms);
+      ASSERT_NE(time_400ms, Fw::ZERO_TIME);
+
+      const double time_400 = time_400ms.getSeconds() + (time_400ms.getUSeconds() / (1000.*1000.));
+      ASSERT_NEAR(0.4, time_400, 0.1);
+
+      // Change time base
+      const Fw::Time new_base(TB_WORKSTATION_TIME, 7, 1234, 0);
+      os_stat = epoch_os_time.now();
+      ASSERT_EQ(os_stat, Os::RawTime::OP_OK);
+      invoke_to_setEpoch(0, new_base, epoch_os_time);
+
+      // Immediately get time
+      Fw::Time time_400ms_2;
+      invoke_to_timeGetPort(0, time_400ms_2);
+      ASSERT_NE(time_400ms_2, Fw::ZERO_TIME);
+      ASSERT_EQ(time_400ms_2.getTimeBase(), TB_WORKSTATION_TIME);
+      ASSERT_EQ(time_400ms_2.getContext(), 7);
+
+      const double time_400_2 = time_400ms_2.getSeconds() + (time_400ms_2.getUSeconds() / (1000.*1000.));
+      ASSERT_NEAR(1234.0, time_400_2, 0.1);
+
+      // 600 ms
+      std::this_thread::sleep_for(dur_200ms);
+      Fw::Time time_600ms;
+      invoke_to_timeGetPort(0, time_600ms);
+      ASSERT_NE(time_600ms, Fw::ZERO_TIME);
+      ASSERT_EQ(time_600ms.getTimeBase(), TB_WORKSTATION_TIME);
+      ASSERT_EQ(time_600ms.getContext(), 7);
+
+      const double time_600 = time_600ms.getSeconds() + (time_600ms.getUSeconds() / (1000.*1000.));
+      ASSERT_NEAR(1234.0 + 0.2, time_600, 0.1);
+
+
+
+  }
 
 }

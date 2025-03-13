@@ -21,6 +21,11 @@ TEST(Nominal, NoEpochTest) {
   tester.noEpochTest();
 }
 
+TEST(Nominal, UpdateEpochTest) {
+  Svc::OsTimeTester tester;
+  tester.updateEpochTest();
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

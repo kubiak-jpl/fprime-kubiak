@@ -19,11 +19,15 @@ OsTime ::OsTime(const char* const compName) :
     OsTimeComponentBase(compName),
     m_epoch_fw_time(Fw::ZERO_TIME),
     m_epoch_os_time(),
-    m_epoch_valid(false) {}
+    m_epoch_valid(false),
+    m_epoch_lock()
+{}
 
-OsTime ::~OsTime() {}
+OsTime ::~OsTime()
+{}
 
 void OsTime::set_epoch(const Fw::Time& fw_time, const Os::RawTime& os_time) {
+    Os::ScopeLock lock(m_epoch_lock);
     m_epoch_fw_time = fw_time;
     m_epoch_os_time = os_time;
     m_epoch_valid = true;
@@ -34,6 +38,8 @@ void OsTime::set_epoch(const Fw::Time& fw_time, const Os::RawTime& os_time) {
 // ----------------------------------------------------------------------
 
 void OsTime ::timeGetPort_handler(FwIndexType portNum, Fw::Time& time) {
+    Os::ScopeLock lock(m_epoch_lock);
+
     time = Fw::ZERO_TIME;
     if (!m_epoch_valid) {
         return;
@@ -53,6 +59,10 @@ void OsTime ::timeGetPort_handler(FwIndexType portNum, Fw::Time& time) {
 
     time = m_epoch_fw_time;
     time.add(elapsed.getSeconds(), elapsed.getUSeconds());
+}
+
+void OsTime ::setEpoch_handler(FwIndexType portNum, const Fw::Time& fw_time, const Os::RawTime& os_time) {
+    set_epoch(fw_time, os_time);
 }
 
 }  // namespace Svc

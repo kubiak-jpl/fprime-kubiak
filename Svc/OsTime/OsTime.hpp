@@ -11,6 +11,7 @@
 
 #include <Fw/Time/Time.hpp>
 #include <Os/RawTime.hpp>
+#include <Os/Mutex.hpp>
 
 namespace Svc {
 
@@ -43,9 +44,15 @@ class OsTime final : public OsTimeComponentBase {
                              Fw::Time& time        //!< Reference to Time object
                              ) override;
 
+    //! Handler implementation for setEpoch
+    void setEpoch_handler(FwIndexType portNum,
+                          const Fw::Time& fw_time,
+                          const Os::RawTime& os_time) override;
+
     Fw::Time m_epoch_fw_time;
     Os::RawTime m_epoch_os_time;
     bool m_epoch_valid;
+    Os::Mutex m_epoch_lock;
 };
 
 }  // namespace Svc
