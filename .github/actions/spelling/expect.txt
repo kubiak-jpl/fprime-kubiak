@@ -492,6 +492,7 @@ jsonable
 kermit
 kevin
 kislyuk
+kubiak
 Lammert
 lammertbies
 LASTLOG
