@@ -15,6 +15,10 @@ set(SOURCE_FILES
   "${CMAKE_CURRENT_LIST_DIR}/OsTime.cpp"
 )
 
+set(MOD_DEPS
+    Svc_Ports_OsTimeEpoch
+)
+
 register_fprime_module()
 
 set(UT_AUTO_HELPERS ON)
