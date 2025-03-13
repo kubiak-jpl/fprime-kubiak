@@ -20,7 +20,7 @@ If at any point an error status is returned from the RawTime implementation then
 
 ## 3.1 Setup
 
-The epoch timestamp pair should be set prior to using the component. Prior to passing in the poch timestamp, OsTime will return ZERO_TIME to all port requests.
+The epoch timestamp pair should be set prior to using the component. Prior to passing in the epoch timestamp, OsTime will return ZERO_TIME to all port requests.
 
 The epoch timestamp pair can be set by either directly call the `set_epoch` method, or by calling the `setEpoch` port call on the component. It is expected that `set_epoch` will be called during topology setup and the `setEpoch` port will be used during runtime, but this is not required.
 
