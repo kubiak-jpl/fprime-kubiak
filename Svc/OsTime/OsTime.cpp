@@ -57,7 +57,7 @@ void OsTime ::timeGetPort_handler(FwIndexType portNum, Fw::Time& time) {
         return;
     }
 
-    time = m_epoch_fw_time;
+    (void) time = m_epoch_fw_time;
     time.add(elapsed.getSeconds(), elapsed.getUSeconds());
 }
 
