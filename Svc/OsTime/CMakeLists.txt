@@ -10,6 +10,8 @@
 #
 ####
 
+add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test/RawTimeTester")
+
 set(SOURCE_FILES
   "${CMAKE_CURRENT_LIST_DIR}/OsTime.fpp"
   "${CMAKE_CURRENT_LIST_DIR}/OsTime.cpp"
@@ -27,5 +29,8 @@ set(UT_SOURCE_FILES
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTester.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/test/ut/OsTimeTestMain.cpp"
 )
-choose_fprime_implementation(Os/RawTime Os/RawTime/Posix)
+set(UT_MOD_DEPS
+    Svc_OsTime_test_RawTimeTester
+)
+choose_fprime_implementation(Os/RawTime Svc_OsTime_test_RawTimeTester)
 register_fprime_ut()
