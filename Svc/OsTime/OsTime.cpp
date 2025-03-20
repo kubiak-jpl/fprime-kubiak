@@ -38,10 +38,20 @@ void OsTime::set_epoch(const Fw::Time& fw_time, const Os::RawTime& os_time) {
 // ----------------------------------------------------------------------
 
 void OsTime ::timeGetPort_handler(FwIndexType portNum, Fw::Time& time) {
-    Os::ScopeLock lock(m_epoch_lock);
+    Fw::Time temp_epoch_fw_time;
+    Os::RawTime temp_epoch_os_time;
+    bool temp_epoch_valid;
+
+    // Copy class state inside of a mutex
+    {
+        Os::ScopeLock lock(m_epoch_lock);
+        temp_epoch_fw_time = m_epoch_fw_time;
+        temp_epoch_os_time = m_epoch_os_time;
+        temp_epoch_valid = m_epoch_valid;
+    }
 
     time = Fw::ZERO_TIME;
-    if (!m_epoch_valid) {
+    if (!temp_epoch_valid) {
         return;
     }
 
@@ -52,12 +62,12 @@ void OsTime ::timeGetPort_handler(FwIndexType portNum, Fw::Time& time) {
     }
 
     Fw::TimeInterval elapsed;
-    stat = time_now.getTimeInterval(m_epoch_os_time, elapsed);
+    stat = time_now.getTimeInterval(temp_epoch_os_time, elapsed);
     if (stat != Os::RawTime::OP_OK) {
         return;
     }
 
-    time = m_epoch_fw_time;
+    time = temp_epoch_fw_time;
     time.add(elapsed.getSeconds(), elapsed.getUSeconds());
 }
 
