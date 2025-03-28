@@ -653,6 +653,7 @@ osaves
 osets
 ossw
 ostate
+OSTIME
 otherdictitems
 otheritems
 otherside
@@ -769,6 +770,7 @@ RATEGROUPDRIVERIMPLTESTER
 RATEGROUPMEMBEROUT
 RATELIMITERTESTER
 rawtime
+RAWTIMETESTER
 RBF
 RCHILD
 rcvd
