@@ -74,6 +74,27 @@ namespace Svc {
     }
 
     void CmdSequencerComponentImpl ::
+      startSequence()
+    {
+        if (not this->m_sequence->hasMoreRecords()) {
+            // No sequence loaded
+            this->log_WARNING_LO_CS_NoSequenceActive();
+            return;
+        }
+        if (!this->requireRunMode(STOPPED)) {
+            return;
+        }
+
+        this->m_blockState = Svc::CmdSequencer_BlockState::NO_BLOCK;
+        this->m_runMode = RUNNING;
+        this->performCmd_Step();
+        this->log_ACTIVITY_HI_CS_CmdStarted(this->m_sequence->getLogFileName());
+        if(this->isConnected_seqStartOut_OutputPort(0)) {
+            this->seqStartOut_out(0, this->m_sequence->getStringFileName());
+        }
+    }
+
+    void CmdSequencerComponentImpl ::
       deallocateBuffer(Fw::MemAllocator& allocator)
     {
         this->m_sequence->deallocateBuffer(allocator);

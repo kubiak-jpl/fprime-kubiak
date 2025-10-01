@@ -555,6 +555,8 @@ namespace Svc {
           const Fw::StringBase& fileName //!< The file name
       );
 
+      void startSequence();
+
       //! Return allocated buffer. Call during shutdown.
       void deallocateBuffer(
           Fw::MemAllocator& allocator //!< The allocator
