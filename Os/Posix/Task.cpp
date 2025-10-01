@@ -156,6 +156,8 @@ namespace Task {
             handle.m_is_valid = true;
         }
 
+        pthread_setname_np(handle.m_task_descriptor, arguments.m_name.toChar());
+
         (void) pthread_attr_destroy(&attributes);
         return Posix::posix_status_to_task_status(pthread_status);
     }
