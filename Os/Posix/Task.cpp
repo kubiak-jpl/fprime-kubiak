@@ -156,7 +156,10 @@ namespace Task {
             handle.m_is_valid = true;
         }
 
+#if defined(TGT_OS_TYPE_LINUX)
+        // Note: Parameters on MacOS are different
         pthread_setname_np(handle.m_task_descriptor, arguments.m_name.toChar());
+#endif
 
         (void) pthread_attr_destroy(&attributes);
         return Posix::posix_status_to_task_status(pthread_status);
