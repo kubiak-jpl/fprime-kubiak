@@ -25,5 +25,10 @@ module Os {
     constant FILE_MODE_ISGID = 0x400
     constant FILE_MODE_ISVTX = 0x200
 
+    @ File creation mode used when calling Os::File "open" with
+    @ the OPEN_CREATE mode flag.
+    @ The FILE_DEFAULT_CREATE_MODE constant @ is a bitfield of the
+    @ above FILE_MODE_* bits that should be present in the created file
+    @ The default value corresponds to a mode of 600, or user R/W bits set
     constant FILE_DEFAULT_CREATE_MODE = FILE_MODE_IRUSR + FILE_MODE_IWUSR
 }
