@@ -42,7 +42,7 @@ struct DpContainerHeader {
 
     //! Deserialize a header from a packet buffer
     //! Check that the serialization succeeded at every step
-    //! Check the header hash and the data hash
+    //! Check the header hash
     void deserialize(const char* const file,  //!< The call site file name
                      const U32 line,          //!< The call site line number
                      Fw::Buffer& buffer       //!< The packet buffer
