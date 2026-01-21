@@ -106,6 +106,22 @@ struct DpContainerHeader {
         DP_CONTAINER_HEADER_ASSERT_EQ(computedHashBuffer, storedHashBuffer);
     }
 
+    //! Check the data hash
+    void checkDataHash(const char* const file,  //!< The call site file name
+                       const U32 line,          //!< The call site line number
+                       Fw::Buffer& buffer       //!< The packet buffer
+    ) {
+        Utils::HashBuffer computedHashBuffer;
+        U8* const buffAddrBase = buffer.getData();
+        U8* const dataAddr = &buffAddrBase[DpContainer::DATA_OFFSET];
+        Utils::Hash::hash(dataAddr, this->m_dataSize, computedHashBuffer);
+        DpContainer container(this->m_id, buffer);
+        container.setDataSize(this->m_dataSize);
+        const FwSizeType dataHashOffset = container.getDataHashOffset();
+        Utils::HashBuffer storedHashBuffer(&buffAddrBase[dataHashOffset], HASH_DIGEST_LENGTH);
+        DP_CONTAINER_HEADER_ASSERT_EQ(computedHashBuffer, storedHashBuffer);
+    }
+
     //! Check a packet header against a buffer
     void check(const char* const file,                         //!< The call site file name
                const U32 line,                                 //!< The call site line number
