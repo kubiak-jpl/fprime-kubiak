@@ -57,6 +57,15 @@ register_fprime_ut(
     Fw_StringFormat_snprintf
 )
 
+if (FPRIME_PLATFORM STREQUAL "Linux")
+    register_fprime_ut(
+        Fw_Types_Mmap_ut_exe
+      SOURCES
+        "${CMAKE_CURRENT_LIST_DIR}/test/ut/MmapAllocatorTest.cpp"
+      DEPENDS
+        Fw_Types
+    )
+endif()
 
 # Non-test directory
 add_fprime_subdirectory("${CMAKE_CURRENT_LIST_DIR}/GTest")
