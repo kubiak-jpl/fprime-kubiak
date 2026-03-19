@@ -81,7 +81,7 @@ void* MmapAllocator<C>::allocate(const FwEnumStoreType identifier,
 
     // mmap allocates pages at a virtual boundary. Alignment is guaranteed
     // up to the page size
-    if (alignment > sysconf(_SC_PAGESIZE)) {
+    if (alignment > static_cast<FwSizeType>(sysconf(_SC_PAGESIZE))) {
         Fw::Logger::log("Unable to allocate. Alignment request (%ld) > PAGE_SIZE (%ld)\n",
                         alignment, sysconf(_SC_PAGESIZE));
         size = 0;
