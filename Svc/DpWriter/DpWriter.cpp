@@ -158,7 +158,7 @@ Fw::Success::T DpWriter::deserializePacketHeader(Fw::Buffer& buffer, Fw::DpConta
     return status;
 }
 
-void DpWriter::performProcessing(const Fw::DpContainer& container) {
+void DpWriter::performProcessing(Fw::DpContainer& container) {
     // Get the buffer
     Fw::Buffer buffer = container.getBuffer();
     // Get the bit mask for the processing types
@@ -169,6 +169,11 @@ void DpWriter::performProcessing(const Fw::DpContainer& container) {
             this->procBufferSendOut_out(portNum, buffer);
         }
     }
+
+    // Update container buffer size
+    container.getBuffer().setSize(buffer.getSize());
+    container.setDataSize(buffer.getSize() - Fw::DpContainer::MIN_PACKET_SIZE);
+    container.serializeHeader();
 }
 
 Fw::Success::T DpWriter::writeFile(const Fw::DpContainer& container,
