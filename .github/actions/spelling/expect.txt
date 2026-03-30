@@ -14,6 +14,7 @@ alphanums
 ampcs
 ANamespace
 Aos
+APacket
 apid
 APIDOCS
 APPENDFILE
@@ -252,6 +253,9 @@ FILEHANDLINGSUBTOPOLOGY
 FILEID
 FILEMANAGERCONFIG
 FILEOPENERROR
+FILETESTER
+FILEWORKER
+FILEWORKERTYPES
 FILEWRITEERROR
 fio
 fle
@@ -381,6 +385,7 @@ jobrestrictions
 jpl
 jplffs
 jre
+kessler
 kevin
 kermit
 kubiak
@@ -454,6 +459,7 @@ mutexattr
 Mutexed
 muxed
 mycompany
+myos
 nasafprime
 nbits
 ncsl
@@ -464,6 +470,9 @@ NODELABEL
 noinline
 NOLINT
 NOLINTNEXTLINE
+nominaldne
+nominalread
+nominalwrite
 noparent
 norecords
 NOSPEC
@@ -490,7 +499,7 @@ optin
 optind
 orgslist
 ortega
-OSAL
+osal
 ostate
 OSTIME
 otherside
@@ -571,6 +580,7 @@ qhelpgenerator
 QHG
 qhp
 qsf
+racheljt
 RAII
 randtbl
 raspberrypi
@@ -601,6 +611,7 @@ rhel
 RHH
 Rizvi
 ROOTDIR
+rowspan
 rpi
 rptr
 SAlias
@@ -707,6 +718,8 @@ testerbase
 TESTLIST
 testmark
 TESTUTILS
+testwrite
+testwriteoffset
 tfvn
 thisdirdoesnotexist
 thisfiledoesnotexist
