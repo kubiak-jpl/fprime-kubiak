@@ -99,7 +99,8 @@ void TestState ::action__BufferSendIn__OKProcShrink() {
     // Update m_NumBuffersReceived
     this->abstractState.m_NumBuffersReceived.value++;
     // Construct a random buffer
-    const FwSizeType buffer_data_size = STest::Pick::lowerUpper(AbstractState::MAX_DATA_SIZE/2, AbstractState::MAX_DATA_SIZE);
+    const FwSizeType buffer_data_size =
+        STest::Pick::lowerUpper(AbstractState::MAX_DATA_SIZE / 2, AbstractState::MAX_DATA_SIZE);
     const FwSizeType shrink_data_size = buffer_data_size / 2;
     this->abstractState.setDataSize(buffer_data_size);
     Fw::Buffer buffer = this->abstractState.getDpBufferWithProc(1);

@@ -24,7 +24,6 @@ namespace Svc {
 //! Get a data product buffer backed by m_bufferData
 //! \return The buffer
 Fw::Buffer AbstractState::getDpBuffer() {
-
     Fw::DpCfg::ProcType::SerialType procTypes = 0;
     for (FwIndexType i = 0; i < Fw::DpCfg::ProcType::NUM_CONSTANTS; i++) {
         const bool selector = static_cast<bool>(STest::Pick::lowerUpper(0, 1));
