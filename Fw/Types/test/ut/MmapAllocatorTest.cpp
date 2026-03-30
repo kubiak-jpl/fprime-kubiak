@@ -1,8 +1,8 @@
 
 #include <gtest/gtest.h>
 
-#include <config/FpConfig.hpp>
 #include <Fw/Types/MmapAllocator.hpp>
+#include <config/FpConfig.hpp>
 
 #include <unistd.h>
 
@@ -15,10 +15,10 @@ TEST(MmapAlloc, AllocAll) {
     void* ptrs[AllocCount] = {nullptr};
     for (FwSizeType i = 0; i < AllocCount; i++) {
         bool recoverable = false;
-        FwSizeType alloc_size = 4096 * (i+1);
+        FwSizeType alloc_size = 4096 * (i + 1);
         ptrs[i] = alloc.allocate(static_cast<FwEnumStoreType>(i), alloc_size, recoverable);
         ASSERT_NE(ptrs[i], nullptr);
-        ASSERT_EQ(alloc_size, 4096 * (i+1));
+        ASSERT_EQ(alloc_size, 4096 * (i + 1));
         ASSERT_FALSE(recoverable);
     }
 
@@ -48,9 +48,7 @@ TEST(MmapAlloc, AllocAll) {
 // Check that bad deallocates assert
 TEST(MmapAlloc, BadFree) {
     Fw::MmapAllocator<4> alloc;
-    EXPECT_DEATH({
-        alloc.deallocate(0, reinterpret_cast<void*>(0x1000));
-    }, ".*");
+    EXPECT_DEATH({ alloc.deallocate(0, reinterpret_cast<void*>(0x1000)); }, ".*");
 }
 
 // Check the maximum allowed alignment
@@ -65,6 +63,3 @@ TEST(MmapAlloc, BadAlignment) {
     ASSERT_EQ(ptr, nullptr);
     ASSERT_EQ(alloc_size, 0);
 }
-
-
-
