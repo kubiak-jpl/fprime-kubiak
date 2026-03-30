@@ -34,7 +34,7 @@ class MmapAllocator : public MemAllocator {
   public:
     //! Constructor with one default argument
     //!
-    MmapAllocator(int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS) explicit;
+    explicit MmapAllocator(int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS);
     //! Destructor with no arguments
     virtual ~MmapAllocator();
 
