@@ -15,10 +15,10 @@
 
 #include <sys/mman.h>
 #include <unistd.h>
-#include <cerrno>
-#include <Fw/Types/MemAllocator.hpp>
 #include <Fw/DataStructures/RedBlackTreeMap.hpp>
 #include <Fw/Logger/Logger.hpp>
+#include <Fw/Types/MemAllocator.hpp>
+#include <cerrno>
 
 namespace Fw {
 
@@ -34,7 +34,7 @@ class MmapAllocator : public MemAllocator {
   public:
     //! Constructor with one default argument
     //!
-    MmapAllocator(int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS);
+    MmapAllocator(int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS) explicit;
     //! Destructor with no arguments
     virtual ~MmapAllocator();
 
@@ -63,9 +63,7 @@ class MmapAllocator : public MemAllocator {
 };
 
 template <FwSizeType C>
-MmapAllocator<C>::MmapAllocator(int mmap_flags) :
-    m_size_map(),
-    m_mmap_flags(mmap_flags) {}
+MmapAllocator<C>::MmapAllocator(int mmap_flags) : m_size_map(), m_mmap_flags(mmap_flags) {}
 
 template <FwSizeType C>
 MmapAllocator<C>::~MmapAllocator() {}
@@ -75,15 +73,14 @@ void* MmapAllocator<C>::allocate(const FwEnumStoreType identifier,
                                  FwSizeType& size,
                                  bool& recoverable,
                                  FwSizeType alignment) {
-
     // mmap memory is never recoverable
     recoverable = false;
 
     // mmap allocates pages at a virtual boundary. Alignment is guaranteed
     // up to the page size
     if (alignment > static_cast<FwSizeType>(sysconf(_SC_PAGESIZE))) {
-        Fw::Logger::log("Unable to allocate. Alignment request (%ld) > PAGE_SIZE (%ld)\n",
-                        alignment, sysconf(_SC_PAGESIZE));
+        Fw::Logger::log("Unable to allocate. Alignment request (%ld) > PAGE_SIZE (%ld)\n", alignment,
+                        sysconf(_SC_PAGESIZE));
         size = 0;
         return nullptr;
     }
@@ -96,8 +93,7 @@ void* MmapAllocator<C>::allocate(const FwEnumStoreType identifier,
 
     void* addr = mmap(nullptr, size, PROT_READ | PROT_WRITE, m_mmap_flags, -1, 0);
     if (addr == MAP_FAILED) {
-        Fw::Logger::log("Unable to allocate. mmap syscall failed. Errno (%ld)\n",
-                        errno);
+        Fw::Logger::log("Unable to allocate. mmap syscall failed. Errno (%ld)\n", errno);
         size = 0;
         return nullptr;
     }
@@ -111,8 +107,7 @@ void* MmapAllocator<C>::allocate(const FwEnumStoreType identifier,
 template <FwSizeType C>
 void MmapAllocator<C>::deallocate(const FwEnumStoreType identifier, void* ptr) {
     size_t alloc_size = 0;
-    Fw::Success ok = m_size_map.remove(reinterpret_cast<intptr_t>(ptr),
-                                       alloc_size);
+    Fw::Success ok = m_size_map.remove(reinterpret_cast<intptr_t>(ptr), alloc_size);
     FW_ASSERT(ok == Fw::Success::SUCCESS, ok);
 
     int stat = munmap(ptr, alloc_size);
