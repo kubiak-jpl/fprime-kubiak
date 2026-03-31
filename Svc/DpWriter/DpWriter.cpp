@@ -170,10 +170,24 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
         }
     }
 
-    // Update container buffer size
-    container.getBuffer().setSize(buffer.getSize());
-    container.setDataSize(buffer.getSize() - Fw::DpContainer::MIN_PACKET_SIZE);
+    // Updated DpContainer object state with the returned value in the
+    // container buffer
+    Fw::SerializeStatus stat = container.deserializeHeader();
+    FW_ASSERT(stat == Fw::FW_SERIALIZE_OK, stat);
+
+    // Check that the buffer size is compatible with the data size in
+    // the container header
+    FW_ASSERT(container.getDataSize() <= buffer.getSize(),
+              // Note: May perform a 64 to 32 bit conversion
+              static_cast<FwAssertArgType>(container.getDataSize()),
+              static_cast<FwAssertArgType>(buffer.getSize()));
+
+    // Re-compute and serialize the container header into the buffer
+    container.updateHeaderHash();
     container.serializeHeader();
+
+    // Shrink internal Fw::Buffer
+    container.shrinkBufferSize();
 }
 
 Fw::Success::T DpWriter::writeFile(const Fw::DpContainer& container,

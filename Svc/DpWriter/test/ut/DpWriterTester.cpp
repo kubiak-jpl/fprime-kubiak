@@ -37,7 +37,12 @@ void DpWriterTester::from_procBufferSendOut_handler(FwIndexType portNum, Fw::Buf
         static_cast<Fw::DpCfg::ProcType::SerialType>(this->abstractState.m_procTypes | (1 << portNum));
 
     if (this->abstractState.m_procShrinkDataSizeOpt.hasValue()) {
-        buffer.setSize(Fw::DpContainer::MIN_PACKET_SIZE + this->abstractState.m_procShrinkDataSizeOpt.get());
+        // Update the data size in the container
+        const FwSizeType newSize = this->abstractState.m_procShrinkDataSizeOpt.get();
+        Fw::DpContainer c(0, buffer);
+        c.deserializeHeader();
+        c.setDataSize(newSize);
+        c.serializeHeader();
     }
 }
 
