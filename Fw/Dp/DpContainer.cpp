@@ -143,7 +143,6 @@ void DpContainer::setBuffer(const Buffer& buffer) {
 }
 
 void DpContainer::shrinkBufferSize() {
-
     // Calculate the assumed size for the Fw::Buffer
     const FwSizeType newSize = this->getPacketSize();
 
@@ -151,10 +150,8 @@ void DpContainer::shrinkBufferSize() {
     // AND
     // That the update is a shrink operation. Growing an
     // Fw::Buffer is not safe
-    FW_ASSERT(newSize >= MIN_PACKET_SIZE,
-              static_cast<FwAssertArgType>(newSize));
-    FW_ASSERT(newSize <= this->m_buffer.getSize(),
-              static_cast<FwAssertArgType>(newSize),
+    FW_ASSERT(newSize >= MIN_PACKET_SIZE, static_cast<FwAssertArgType>(newSize));
+    FW_ASSERT(newSize <= this->m_buffer.getSize(), static_cast<FwAssertArgType>(newSize),
               static_cast<FwAssertArgType>(this->m_buffer.getSize()));
 
     // Shrink the Fw::Buffer

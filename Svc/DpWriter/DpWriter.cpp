@@ -179,8 +179,7 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
     // the container header
     FW_ASSERT(container.getDataSize() <= buffer.getSize(),
               // Note: May perform a 64 to 32 bit conversion
-              static_cast<FwAssertArgType>(container.getDataSize()),
-              static_cast<FwAssertArgType>(buffer.getSize()));
+              static_cast<FwAssertArgType>(container.getDataSize()), static_cast<FwAssertArgType>(buffer.getSize()));
 
     // Re-compute and serialize the container header into the buffer
     container.updateHeaderHash();
