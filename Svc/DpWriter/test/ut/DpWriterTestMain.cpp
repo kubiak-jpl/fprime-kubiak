@@ -76,6 +76,7 @@ TEST(BufferSendIn, OKProcShrink) {
     REQUIREMENT("SVC-DPMANAGER-002");
     REQUIREMENT("SVC-DPMANAGER-003");
     REQUIREMENT("SVC-DPMANAGER-004");
+    REQUIREMENT("SVC-DPMANAGER-007");
     BufferSendIn::Tester tester;
     tester.OKProcShrink();
 }
