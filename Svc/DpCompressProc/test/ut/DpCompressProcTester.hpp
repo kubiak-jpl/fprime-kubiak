@@ -20,7 +20,7 @@ class DpCompressProcTester : public DpCompressProcGTestBase {
     // ----------------------------------------------------------------------
 
     // Maximum size of histories storing events, telemetry, and port outputs
-    static const FwSizeType MAX_HISTORY_SIZE = 10;
+    static const FwSizeType MAX_HISTORY_SIZE = 1000;
 
     // Instance ID supplied to the component instance under test
     static const FwEnumStoreType TEST_INSTANCE_ID = 0;
@@ -36,12 +36,31 @@ class DpCompressProcTester : public DpCompressProcGTestBase {
     //! Destroy object DpCompressProcTester
     ~DpCompressProcTester();
 
+    void uncompress_data(
+        Fw::Buffer container_buf,
+        const FwSizeType chunk_size,
+        std::vector<U8>& out_vec
+    );
+
+    void test_chunks(
+        const FwSizeType chunk_size,
+        std::vector<AbstractState::Chunk> chunks
+    );
+
   public:
     // ----------------------------------------------------------------------
     // Tests
     // ----------------------------------------------------------------------
 
   private:
+
+    void test_chunks_helper(
+        const FwSizeType chunk_size,
+        std::vector<AbstractState::Chunk> chunks,
+        Fw::Buffer container_buf
+    );
+
+
     // ----------------------------------------------------------------------
     // Helper functions
     // ----------------------------------------------------------------------

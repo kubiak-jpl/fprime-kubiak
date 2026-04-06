@@ -39,9 +39,10 @@ class AbstractState {
     AbstractState() {}
 
     enum Compressible {
-        UNCOMPRESSED,
-        COMPRESSED,
-        MINIMAL_COMPRESSED
+        UNCOMPRESSED = 'U',
+        COMPRESSED = 'C',
+        MINIMAL_COMPRESSED = 'M',
+        MAXIMAL_COMPRESSED = 'X'
     };
 
     struct Chunk {
@@ -63,11 +64,52 @@ class AbstractState {
             std::vector<Chunk> chunks
     );
 
+    void check_uncompressed_data(
+            std::vector<U8> data_vec,
+            FwSizeType chunk_size,
+            std::vector<Chunk> chunks
+    );
+
+    void set_chunk_state(
+            const FwSizeType chunk_size,
+            std::vector<AbstractState::Chunk> chunks
+    ) {
+        chunk_size_ = chunk_size;
+        chunks_ = chunks;
+    }
+
+    void reset_compressed_size_state() {
+        exp_compressed_size_ = 0;
+        last_uncompressed_ = false;
+    }
+
+    void update_compressed_size_state(
+        FwSizeType compressed_size,
+        AbstractState::Compressible compressible) {
+
+        exp_compressed_size_ += compressed_size;
+
+        if (compressible != AbstractState::UNCOMPRESSED ||
+            !last_uncompressed_) {
+
+            // Expect a header for this chunk
+            exp_compressed_size_ +=
+                sizeof(FwDpIdType) + Svc::CompressionMetadata::SERIALIZED_SIZE;
+        }
+        last_uncompressed_ = compressible == AbstractState::UNCOMPRESSED;
+    }
+
   public:
     // ----------------------------------------------------------------------
     // Public member functions
     // ----------------------------------------------------------------------
 
+    FwSizeType chunk_size_;
+    std::vector<AbstractState::Chunk> chunks_;
+    bool success_;
+
+    FwSizeType exp_compressed_size_;
+    bool last_uncompressed_;
 };
 
 }  // namespace Svc

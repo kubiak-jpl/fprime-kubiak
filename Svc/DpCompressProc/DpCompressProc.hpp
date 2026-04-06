@@ -29,6 +29,11 @@ class DpCompressProc final : public DpCompressProcComponentBase {
     // Handler implementations for typed input ports
     // ----------------------------------------------------------------------
 
+    void serializeCompressionHeader(
+            Fw::SerializeBufferBase& serializer,
+            const CompressionMetadata&& metadata
+    );
+
     //! Handler implementation for procRequest
     void procRequest_handler(FwIndexType portNum,  //!< The port number
                              Fw::Buffer& fwBuffer  //!< The buffer

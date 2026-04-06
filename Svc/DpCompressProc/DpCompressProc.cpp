@@ -22,6 +22,16 @@ DpCompressProc ::~DpCompressProc() {}
 // Handler implementations for typed input ports
 // ----------------------------------------------------------------------
 
+void DpCompressProc::
+    serializeCompressionHeader(
+        Fw::SerializeBufferBase& serializer,
+        const CompressionMetadata&& metadata
+) {
+    const FwDpIdType record_id = this->getIdBase() + RecordId::CompressionRecord;
+    serializer.serializeFrom(record_id);
+    serializer.serializeFrom(metadata);
+}
+
 void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuffer) {
 
     Fw::ParamValid param_valid;
@@ -43,7 +53,6 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
     Fw::Enabled en_chunking = paramGet_ENABLE_CHUNKING(param_valid);
     FW_ASSERT((param_valid == Fw::ParamValid::DEFAULT) ||
               (param_valid == Fw::ParamValid::VALID), param_valid);
-
 
     FwSizeType prm_chunk_size = 0;
     if (en_chunking == Fw::Enabled::ENABLED) {
@@ -81,6 +90,11 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
     // Tracks the processing steps that need to occur for
     // each chunk, whether is is compressed or not
     enum {
+        // Initial state. First processing state will
+        // either be PRE_COMMIT or LAST_COMPRESSED depending
+        // on the compression of the first chunk.
+        INIT,
+
         // Have not committed to returning a compressed
         // data product. Stay in this state until at least
         // one chunk is found to be compressible
@@ -98,7 +112,7 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
         LAST_UNCOMPRESSED
     } state;
 
-    state = PRE_COMMIT;
+    state = INIT;
 
     FwSizeType uncompressed_size = 0;
     U8* uncompressed_head = nullptr;
@@ -127,28 +141,27 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
         if (chunk_size > 4*compression_header_size) {
 
             switch (state) {
+                case INIT:
+                    // Need room for two headers.
+                    //  1. This compressed chunk
+                    //  2. A potential uncompressed chunk that follows
+                    // This is assuming that the initial chunk can be compressed
+                    min_compression = chunk_size - 2*compression_header_size;
+
+                    // Compression needs to occur in the buffer with enough
+                    // space for the this header
+                    compression_offset = compression_header_size;
+                    break;
                 case PRE_COMMIT:
-                    if (uncompressed_size == 0) {
-                        // Need room for two headers.
-                        //  1. This compressed chunk
-                        //  2. A potential uncompressed chunk that follows
-                        // This is assuming that the initial chunk can be compressed
-                        min_compression = chunk_size - 2*compression_header_size;
+                    // Need room for three headers.
+                    //  1. The initial uncompressed chunk
+                    //  2. This compressed chunk
+                    //  3. A potential uncompressed chunk that follows
+                    min_compression = chunk_size - 3*compression_header_size;
 
-                        // Compression needs to occur in the buffer with enough
-                        // space for the this header
-                        compression_offset = compression_header_size;
-                    } else {
-                        // Need room for three headers.
-                        //  1. The initial uncompressed chunk
-                        //  2. This compressed chunk
-                        //  3. A potential uncompressed chunk that follows
-                        min_compression = chunk_size - 3*compression_header_size;
-
-                        // Compression needs to occur in the buffer with enough
-                        // space for the this header AND the initial uncompressed header
-                        compression_offset = 2*compression_header_size;
-                    }
+                    // Compression needs to occur in the buffer with enough
+                    // space for the this header AND the initial uncompressed header
+                    compression_offset = 2*compression_header_size;
                     break;
                 case LAST_UNCOMPRESSED:
                 case LAST_COMPRESSED:
@@ -170,6 +183,11 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                     FW_ASSERT(false, state);
                     break;
             }
+
+            if (min_compression > chunk_size - compression_offset) {
+                min_compression = chunk_size - compression_offset;
+            }
+
             FW_ASSERT(min_compression <= chunk_size,
                       static_cast<FwAssertArgType>(min_compression),
                       static_cast<FwAssertArgType>(chunk_size));
@@ -196,6 +214,13 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
 
             spare_byte_counter += chunk_size - comp_size;
 
+            // If the first chunk is compressible treat the state as
+            // if it was LAST_COMPRESSED. No need to perform the special
+            // move and header serialization in PRE_COMMIT
+            if (state == INIT) {
+                state = LAST_COMPRESSED;
+            }
+
             switch (state) {
                 case PRE_COMMIT:
                     // Case A.
@@ -209,29 +234,37 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                                  uncompressed_size);
 
                     // Serialize the header bytes to the front of the data
-                    data_reser.serializeFrom(CompressionMetadata(
-                        alg,
-                        uncompressed_size));
+                    serializeCompressionHeader(
+                        data_reser,
+                        CompressionMetadata(
+                            CompressionAlgorithm::UNCOMPRESSED,
+                            uncompressed_size
+                    ));
 
                     // Move the serializer past the uncompressed chunk manually
                     data_reser.serializeSkip(uncompressed_size);
 
-                    data_reser.serializeFrom(CompressionMetadata(
-                        alg,
-                        comp_size));
+                    serializeCompressionHeader(
+                        data_reser,
+                        CompressionMetadata(
+                            alg,
+                            comp_size
+                    ));
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
                                              Fw::Serialization::OMIT_LENGTH);
-
                     break;
                 case LAST_COMPRESSED:
                     // Case B
                     // 1. Write header at data_reser location
                     // 2. Serialize compressed data
-                    data_reser.serializeFrom(CompressionMetadata(
-                        alg,
-                        comp_size));
+                    serializeCompressionHeader(
+                        data_reser,
+                        CompressionMetadata(
+                            alg,
+                            comp_size
+                    ));
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
@@ -244,9 +277,11 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                     // 2. Serialize uncompressed data
                     // 3. Write header for compressed data at data_reser location
                     // 4. Serialize compressed data
-                    data_reser.serializeFrom(CompressionMetadata(
-                        CompressionAlgorithm::UNCOMPRESSED,
-                        uncompressed_size
+                    serializeCompressionHeader(
+                        data_reser,
+                        CompressionMetadata(
+                            CompressionAlgorithm::UNCOMPRESSED,
+                            uncompressed_size
                     ));
 
                     FW_ASSERT(uncompressed_head != nullptr);
@@ -254,9 +289,12 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                                              uncompressed_size,
                                              Fw::Serialization::OMIT_LENGTH);
 
-                    data_reser.serializeFrom(CompressionMetadata(
-                        alg,
-                        comp_size));
+                    serializeCompressionHeader(
+                        data_reser,
+                        CompressionMetadata(
+                            alg,
+                            comp_size
+                    ));
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
@@ -272,7 +310,14 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
             uncompressed_head = nullptr;
             state = LAST_COMPRESSED;
         } else {
-            // Data was compressed
+            // Data was uncompressed
+
+            // If the first chunk is not compressible treat the state as
+            // if it was PRE_COMMIT
+            if (state == INIT) {
+                state = PRE_COMMIT;
+            }
+
             switch (state) {
                 case PRE_COMMIT:
                     // No work.
@@ -323,9 +368,11 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
             // 1. Write header for uncompressed data.
             //    data_reser has been kept at this location
             // 2. Serialize uncompressed data
-            data_reser.serializeFrom(CompressionMetadata(
-                CompressionAlgorithm::UNCOMPRESSED,
-                uncompressed_size
+            serializeCompressionHeader(
+                data_reser,
+                CompressionMetadata(
+                    CompressionAlgorithm::UNCOMPRESSED,
+                    uncompressed_size
             ));
 
             FW_ASSERT(uncompressed_head != nullptr);
