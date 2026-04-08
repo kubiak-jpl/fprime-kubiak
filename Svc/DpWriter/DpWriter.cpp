@@ -180,8 +180,8 @@ void DpWriter::performProcessing(Fw::DpContainer& container) {
 
         // Check that the buffer size is compatible with the data size in
         // the container header
-        FW_ASSERT(container.getDataSize() <= buffer.getSize(),
-                  static_cast<FwAssertArgType>(container.getDataSize()), static_cast<FwAssertArgType>(buffer.getSize()));
+        FW_ASSERT(container.getDataSize() <= buffer.getSize(), static_cast<FwAssertArgType>(container.getDataSize()),
+                  static_cast<FwAssertArgType>(buffer.getSize()));
 
         // Re-compute and serialize the container header into the buffer
         container.updateHeaderHash();
