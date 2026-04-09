@@ -1,12 +1,11 @@
 module Svc {
 
-    enum CompressionAlgorithm {
+    enum CompressionAlgorithm : U8 {
         UNCOMPRESSED = 0
         ZLIB_DEFLATE = 1
     }
 
-    struct CompressionMetadata {
-        algorithm: CompressionAlgorithm,
-        payload_size: FwSizeType
+    dictionary struct CompressionMetadata {
+        algorithm: CompressionAlgorithm
     }
 }

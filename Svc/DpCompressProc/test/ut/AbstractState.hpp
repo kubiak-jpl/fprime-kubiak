@@ -55,23 +55,23 @@ class AbstractState {
     };
 
     Fw::Buffer build_compress_buffer(
-            FwSizeType chunk_size,
+            FwSizeStoreType chunk_size,
             std::vector<Chunk> chunks
     );
 
     FwSizeType expected_compressed_size(
-            FwSizeType chunk_size,
+            FwSizeStoreType chunk_size,
             std::vector<Chunk> chunks
     );
 
     void check_uncompressed_data(
             std::vector<U8> data_vec,
-            FwSizeType chunk_size,
+            FwSizeStoreType chunk_size,
             std::vector<Chunk> chunks
     );
 
     void set_chunk_state(
-            const FwSizeType chunk_size,
+            const FwSizeStoreType chunk_size,
             std::vector<AbstractState::Chunk> chunks
     ) {
         chunk_size_ = chunk_size;
@@ -94,7 +94,7 @@ class AbstractState {
 
             // Expect a header for this chunk
             exp_compressed_size_ +=
-                sizeof(FwDpIdType) + Svc::CompressionMetadata::SERIALIZED_SIZE;
+                sizeof(FwDpIdType) + sizeof(FwSizeStoreType) + Svc::CompressionMetadata::SERIALIZED_SIZE;
         }
         last_uncompressed_ = compressible == AbstractState::UNCOMPRESSED;
     }
@@ -104,7 +104,7 @@ class AbstractState {
     // Public member functions
     // ----------------------------------------------------------------------
 
-    FwSizeType chunk_size_;
+    FwSizeStoreType chunk_size_;
     std::vector<AbstractState::Chunk> chunks_;
     bool success_;
 

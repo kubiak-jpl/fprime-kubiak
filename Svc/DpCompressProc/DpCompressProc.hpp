@@ -8,6 +8,7 @@
 #define Svc_DpCompressProc_HPP
 
 #include "Svc/DpCompressProc/DpCompressProcComponentAc.hpp"
+#include "Svc/DpCompressProc/Types/CompressionMetadataSerializableAc.hpp"
 
 namespace Svc {
 
@@ -31,7 +32,8 @@ class DpCompressProc final : public DpCompressProcComponentBase {
 
     void serializeCompressionHeader(
             Fw::SerializeBufferBase& serializer,
-            const CompressionMetadata&& metadata
+            const FwSizeStoreType compressed_payload_size,
+            const CompressionMetadata& metadata
     );
 
     //! Handler implementation for procRequest

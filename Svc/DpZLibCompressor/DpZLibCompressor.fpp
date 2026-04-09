@@ -81,8 +81,8 @@ module Svc {
         @ ZLibBufferSize is the size of the Fw::Buffer to allocate
         @ for the calls to zalloc and zfree
         @ TODO: Find a good default size of this. How does it change with
-        @ compression level and chunk size
-        param ZLibBufferSize: FwSizeType default 64*1024
+        @ compression level and chunk size?
+        param ZLibBufferSize: FwSizeType default 269000
 
         ###############################################################################
         # Standard AC Ports: Required for Channels, Events, Commands, and Parameters  #

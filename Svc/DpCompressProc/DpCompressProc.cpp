@@ -25,10 +25,14 @@ DpCompressProc ::~DpCompressProc() {}
 void DpCompressProc::
     serializeCompressionHeader(
         Fw::SerializeBufferBase& serializer,
-        const CompressionMetadata&& metadata
+        const FwSizeStoreType compressed_payload_size,
+        const CompressionMetadata& metadata
 ) {
     const FwDpIdType record_id = this->getIdBase() + RecordId::CompressionRecord;
+
+    // TODO: Assert this size wont overflow
     serializer.serializeFrom(record_id);
+    serializer.serializeFrom(static_cast<FwSizeStoreType>(compressed_payload_size + CompressionMetadata::SERIALIZED_SIZE));
     serializer.serializeFrom(metadata);
 }
 
@@ -54,19 +58,19 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
     FW_ASSERT((param_valid == Fw::ParamValid::DEFAULT) ||
               (param_valid == Fw::ParamValid::VALID), param_valid);
 
-    FwSizeType prm_chunk_size = 0;
+    FwSizeStoreType prm_chunk_size = 0;
     if (en_chunking == Fw::Enabled::ENABLED) {
         prm_chunk_size = paramGet_CHUNK_SIZE(param_valid);
         FW_ASSERT((param_valid == Fw::ParamValid::DEFAULT) ||
                   (param_valid == Fw::ParamValid::VALID), param_valid);
 
         if (prm_chunk_size > container.getDataSize()) {
-            prm_chunk_size = container.getDataSize();
+            prm_chunk_size = static_cast<FwSizeStoreType>(container.getDataSize());
         }
     } else {
-        prm_chunk_size = container.getDataSize();
+        prm_chunk_size = static_cast<FwSizeStoreType>(container.getDataSize());
     }
-    const FwSizeType max_chunk_size = prm_chunk_size;
+    const FwSizeStoreType max_chunk_size = prm_chunk_size;
     FW_ASSERT(max_chunk_size != 0);
 
     Fw::Buffer data_buffer(fwBuffer.getData() + Fw::DpContainer::DATA_OFFSET,
@@ -84,6 +88,7 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
     // Compression record serialized size
     const FwSizeType compression_header_size =
         sizeof(FwDpIdType) +
+        sizeof(FwSizeStoreType) +
         CompressionMetadata::SERIALIZED_SIZE;
 
     // DpCompressProc processing state machine.
@@ -114,15 +119,16 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
 
     state = INIT;
 
-    FwSizeType uncompressed_size = 0;
+    FwSizeStoreType uncompressed_size = 0;
     U8* uncompressed_head = nullptr;
 
     while (data_deser.getDeserializeSizeLeft() > 0) {
 
         // Chunk size for this iteration
-        const FwSizeType chunk_size =
-            data_deser.getDeserializeSizeLeft() < max_chunk_size ?
-            data_deser.getDeserializeSizeLeft() : max_chunk_size;
+        const FwSizeStoreType chunk_size =
+            // TODO: Check these casts
+            static_cast<FwSizeStoreType>(data_deser.getDeserializeSizeLeft()) < max_chunk_size ?
+            static_cast<FwSizeStoreType>(data_deser.getDeserializeSizeLeft()) : max_chunk_size;
 
         // a const U8 * and I need to mutable U8*
         U8* data_offset = data_buffer.getData() +
@@ -210,8 +216,10 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
             // Data was compressed
 
             U8* const comp_data_ptr = compression_buffer.getData() + compression_offset;
-            const FwSizeType comp_size = compression_buffer.getSize() - compression_offset;
+            // TODO: Check these casts. Really should reject packet if compression_buffer is near FwSizeStoreType::max
+            const FwSizeStoreType comp_size = static_cast<FwSizeStoreType>(compression_buffer.getSize()) - static_cast<FwSizeStoreType>(compression_offset);
 
+            // TODO: Does this take care of shrinking this size of spare_byte_counter correctly?
             spare_byte_counter += chunk_size - comp_size;
 
             // If the first chunk is compressible treat the state as
@@ -236,20 +244,18 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                     // Serialize the header bytes to the front of the data
                     serializeCompressionHeader(
                         data_reser,
-                        CompressionMetadata(
-                            CompressionAlgorithm::UNCOMPRESSED,
-                            uncompressed_size
-                    ));
+                        uncompressed_size,
+                        CompressionMetadata(CompressionAlgorithm::UNCOMPRESSED)
+                    );
 
                     // Move the serializer past the uncompressed chunk manually
                     data_reser.serializeSkip(uncompressed_size);
 
                     serializeCompressionHeader(
                         data_reser,
-                        CompressionMetadata(
-                            alg,
-                            comp_size
-                    ));
+                        comp_size,
+                        CompressionMetadata(alg)
+                    );
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
@@ -261,10 +267,9 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                     // 2. Serialize compressed data
                     serializeCompressionHeader(
                         data_reser,
-                        CompressionMetadata(
-                            alg,
-                            comp_size
-                    ));
+                        comp_size,
+                        CompressionMetadata(alg)
+                    );
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
@@ -279,10 +284,9 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
                     // 4. Serialize compressed data
                     serializeCompressionHeader(
                         data_reser,
-                        CompressionMetadata(
-                            CompressionAlgorithm::UNCOMPRESSED,
-                            uncompressed_size
-                    ));
+                        uncompressed_size,
+                        CompressionMetadata(CompressionAlgorithm::UNCOMPRESSED)
+                    );
 
                     FW_ASSERT(uncompressed_head != nullptr);
                     data_reser.serializeFrom(uncompressed_head,
@@ -291,10 +295,9 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
 
                     serializeCompressionHeader(
                         data_reser,
-                        CompressionMetadata(
-                            alg,
-                            comp_size
-                    ));
+                        comp_size,
+                        CompressionMetadata(alg)
+                    );
 
                     data_reser.serializeFrom(comp_data_ptr,
                                              comp_size,
@@ -370,10 +373,9 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
             // 2. Serialize uncompressed data
             serializeCompressionHeader(
                 data_reser,
-                CompressionMetadata(
-                    CompressionAlgorithm::UNCOMPRESSED,
-                    uncompressed_size
-            ));
+                uncompressed_size,
+                CompressionMetadata(CompressionAlgorithm::UNCOMPRESSED)
+            );
 
             FW_ASSERT(uncompressed_head != nullptr);
             data_reser.serializeFrom(uncompressed_head,

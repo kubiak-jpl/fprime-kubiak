@@ -91,7 +91,7 @@ Svc::CompressionAlgorithm DpCompressProcTester ::
 
 void DpCompressProcTester::uncompress_data(
     Fw::Buffer container_buf,
-    const FwSizeType chunk_size,
+    const FwSizeStoreType chunk_size,
     std::vector<U8>& out_vec
 ) {
     std::vector<U8> out_tmp;
@@ -114,18 +114,23 @@ void DpCompressProcTester::uncompress_data(
         ASSERT_EQ(id,
                   component.getIdBase() +
                   DpCompressProc::RecordId::CompressionRecord);
+        
+        FwSizeStoreType record_size;
+        stat = data_deser.deserializeTo(record_size);
+        ASSERT_GT(record_size, CompressionMetadata::SERIALIZED_SIZE);
+        ASSERT_LE(record_size, data_deser.getDeserializeSizeLeft());
 
         CompressionMetadata comp_meta;
         stat = data_deser.deserializeTo(comp_meta);
         ASSERT_EQ(stat, Fw::FW_SERIALIZE_OK);
 
-        ASSERT_LE(comp_meta.get_payload_size(), data_deser.getDeserializeSizeLeft());
+        const FwSizeStoreType payload_size = record_size - CompressionMetadata::SERIALIZED_SIZE;
 
         switch (comp_meta.get_algorithm()) {
             case CompressionAlgorithm::UNCOMPRESSED:
             {
-                ASSERT_EQ(comp_meta.get_payload_size() % chunk_size, 0);
-                for (U32 c = 0; c < comp_meta.get_payload_size() / chunk_size; c++) {
+                ASSERT_EQ(payload_size % chunk_size, 0);
+                for (U32 c = 0; c < payload_size / chunk_size; c++) {
                     const U8* c_raw = data_deser.getBuffAddrLeft() + c*chunk_size;
 
                     ASSERT_EQ(c_raw[0], AbstractState::UNCOMPRESSED);
@@ -151,7 +156,7 @@ void DpCompressProcTester::uncompress_data(
                 }
 
                 ASSERT_NE(c_raw[1], 0);
-                for (U32 idx = 2; idx < comp_meta.get_payload_size(); idx++) {
+                for (U32 idx = 2; idx < payload_size; idx++) {
                     ASSERT_EQ(c_raw[idx], c_raw[1]);
                 }
 
@@ -165,7 +170,7 @@ void DpCompressProcTester::uncompress_data(
                 ASSERT_TRUE(false);
         }
 
-        data_deser.deserializeSkip(comp_meta.get_payload_size());
+        data_deser.deserializeSkip(payload_size);
 
     }
 
@@ -173,7 +178,7 @@ void DpCompressProcTester::uncompress_data(
 }
 
 void DpCompressProcTester::test_chunks(
-    const FwSizeType chunk_size,
+    const FwSizeStoreType chunk_size,
     std::vector<AbstractState::Chunk> chunks
 ) {
     Fw::Buffer container_buf =
@@ -189,7 +194,7 @@ void DpCompressProcTester::test_chunks(
 }
 
 void DpCompressProcTester::test_chunks_helper(
-    const FwSizeType chunk_size,
+    const FwSizeStoreType chunk_size,
     std::vector<AbstractState::Chunk> chunks,
     Fw::Buffer container_buf
 ) {

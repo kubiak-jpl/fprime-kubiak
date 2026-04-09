@@ -10,7 +10,7 @@ module Svc {
         param ENABLE_CHUNKING: Fw.Enabled default Fw.Enabled.ENABLED
 
         @ Chunk size to use when passing data to the compression backend
-        param CHUNK_SIZE: FwSizeType default 0
+        param CHUNK_SIZE: FwSizeStoreType default 32*1024
         
         @ Number of bytes to use in a compression chunk
         param ENABLE: Fw.Enabled default Fw.Enabled.ENABLED
@@ -28,10 +28,10 @@ module Svc {
             throttle 10
 
         @ Record ID used to mark compressed records in a data product
-        product record CompressionRecord: CompressionMetadata
+        product record CompressionRecord: U8 array
 
         @ Dummy container needed because a Record ID is defined
-        product container Dummy
+        product container Dummy default priority 0
 
         ###############################################################################
         # Standard AC Ports: Required for Channels, Events, Commands, and Parameters  #
