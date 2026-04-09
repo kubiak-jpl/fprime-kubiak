@@ -201,6 +201,12 @@ telemetry packets RefPackets {
     DataProducts.dpBufferManager.HiBuffs
     DataProducts.dpBufferManager.NoBuffs
     DataProducts.dpBufferManager.EmptyBuffs
+
+    DataProducts.dpZLibCompressorBufferManager.TotalBuffs
+    DataProducts.dpZLibCompressorBufferManager.CurrBuffs
+    DataProducts.dpZLibCompressorBufferManager.HiBuffs
+    DataProducts.dpZLibCompressorBufferManager.NoBuffs
+    DataProducts.dpZLibCompressorBufferManager.EmptyBuffs
   }
 
   packet Version1 id 22 group 2 {
