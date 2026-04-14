@@ -54,20 +54,11 @@ void DpCompressProc ::procRequest_handler(FwIndexType portNum, Fw::Buffer& fwBuf
     Fw::DpContainer container(0, fwBuffer);
     container.deserializeHeader();
 
-    Fw::Enabled en_chunking = paramGet_ENABLE_CHUNKING(param_valid);
-    FW_ASSERT((param_valid == Fw::ParamValid::DEFAULT) ||
-              (param_valid == Fw::ParamValid::VALID), param_valid);
-
-    FwSizeStoreType prm_chunk_size = 0;
-    if (en_chunking == Fw::Enabled::ENABLED) {
-        prm_chunk_size = paramGet_CHUNK_SIZE(param_valid);
+    FwSizeStoreType prm_chunk_size = paramGet_CHUNK_SIZE(param_valid);
         FW_ASSERT((param_valid == Fw::ParamValid::DEFAULT) ||
                   (param_valid == Fw::ParamValid::VALID), param_valid);
 
-        if (prm_chunk_size > container.getDataSize()) {
-            prm_chunk_size = static_cast<FwSizeStoreType>(container.getDataSize());
-        }
-    } else {
+    if (prm_chunk_size > container.getDataSize()) {
         prm_chunk_size = static_cast<FwSizeStoreType>(container.getDataSize());
     }
     const FwSizeStoreType max_chunk_size = prm_chunk_size;

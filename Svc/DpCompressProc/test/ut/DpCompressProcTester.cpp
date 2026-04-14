@@ -202,8 +202,6 @@ void DpCompressProcTester::test_chunks_helper(
     abstractState.success_ = false;
     abstractState.reset_compressed_size_state();
 
-    paramSet_ENABLE_CHUNKING(Fw::Enabled::ENABLED,
-                             Fw::ParamValid::VALID);
     paramSet_CHUNK_SIZE(chunk_size,
                         Fw::ParamValid::VALID);
     paramSet_ENABLE(Fw::Enabled::ENABLED,

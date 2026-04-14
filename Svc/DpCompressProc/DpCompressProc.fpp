@@ -6,9 +6,6 @@ module Svc {
 
         output port compressChunk: CompressChunk
 
-        @ Enable chunking of input data stream to the compression backend
-        param ENABLE_CHUNKING: Fw.Enabled default Fw.Enabled.ENABLED
-
         @ Chunk size to use when passing data to the compression backend
         param CHUNK_SIZE: FwSizeStoreType default 32*1024
         
