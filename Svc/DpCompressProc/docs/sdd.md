@@ -46,6 +46,7 @@ zenuml
 
 ## Port Descriptions
 | Name | Description |
+|---|---|
 |compressChunk| Pass chunks of the original file data to a compressor. See detailed documentation|
 
 ## Component States
@@ -54,12 +55,14 @@ None. DpCompressProc is stateless between invocations
 
 ## Parameters
 | Name | Description |
+|---|---|
 |ENABLE| Enable compression. If disable then DpCompressProc always returns the original data product uncompressed
 |CHUNK\_SIZE | Size, in bytes, to chunk the incoming data product for compression. Larger sizes generally result in better compression ratio at the cost of more memory needed by the compressor |
 
 ## Requirements
 Add requirements in the chart below
 | Name | Description | Validation |
+|---|---|---|
 |SVC-DPCOMPRESSPROC-001 | `Svc::DpCompressProc` shall return the passed `Fw::Buffer` as either a valid compressed data product or the original uncompressed data product. However the data checksum for the container does not need to be valid in the returned product | Unit Test
 |SVC-DPCOMPRESSPROC-002 | `Svc::DpCompressProc` shall not allocate additional memory when processing the container. This does not apply to any downstream compressor which is allow to allocate memory | Unit Test
 |SVC-DPCOMPRESSPROC-003 | `Svc::DpCompressProc` shall support a user modifyable chunking size | Unit Test

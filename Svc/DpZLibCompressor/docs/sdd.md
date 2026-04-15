@@ -1,66 +1,41 @@
 # Svc::DpZLibCompressor
 
-Data Product Compressor using ZLib DEFLATE
+`Svc::DpZLibCompressor` is a Data Product Compressor using ZLib and the DEFLATE algorithm to compress data product chunks. `Svc::DpZLibCompressor` is responsible for receiving chunks of data to compress from DpCompressProc and attempting to compress them.
 
 ## Usage Examples
-Add usage examples here
 
-### Diagrams
-Add diagrams here
-
-### Typical Usage
-And the typical usage of the component here
-
-## Class Diagram
-Add a class diagram here
+See DpCompressProc
 
 ## Port Descriptions
 | Name | Description |
 |---|---|
-|---|---|
+|compressChunk| Receive chunks of data to compress. See DpCompressProc for more information|
+|bufferCompressionGet| Get an `Fw::Buffer`. This compression buffer is used as a temporary buffer to store the results of the compression|
+|bufferCompressionReturn| Return the compressiong buffer |
+|bufferZLibGet| Get an `Fw::Buffer`. This zlib buffer is used as a memory pool to implement malloc/free for zlib through an internal bump allocator|
+|bufferZLibReturn| Return the zlib buffer |
 
 ## Component States
-Add component states in the chart below
-| Name | Description |
-|---|---|
-|---|---|
+
+None. DpZLibCompressor is stateless between invocations
 
 ## Sequence Diagrams
-Add sequence diagrams here
+
+See DpCompressProc
 
 ## Parameters
 | Name | Description |
 |---|---|
-|---|---|
-
-## Commands
-| Name | Description |
-|---|---|
-|---|---|
-
-## Events
-| Name | Description |
-|---|---|
-|---|---|
-
-## Telemetry
-| Name | Description |
-|---|---|
-|---|---|
-
-## Unit Tests
-Add unit test descriptions in the chart below
-| Name | Description | Output | Coverage |
-|---|---|---|---|
-|---|---|---|---|
+| CompressionLevel | Compression level to pass to zlib in the range [0, 9] inclusive. 0 indicates no compression and 9 indicates maximum compression at the cost of runtime |
+| ZLibBufferSize | Size of the ZLib allocator buffer to request through the bufferZLibGet port |
 
 ## Requirements
 Add requirements in the chart below
 | Name | Description | Validation |
-|---|---|---|
-|---|---|---|
+| SVC-DPZLIBCOMPRESSOR-001 | `Svc::DpZLibCompressor` shall attempt to compress incoming data chunks per the protocol defined by DpCompressProc | Unit Test
+| SVC-DPZLIBCOMPRESSOR-002 | `Svc::DpZLibCompressor` shall either return `Svc::CompressionAlgorithm::UNCOMPRESSED` or `Svc::CompressionAlgorithm::ZLIB_DEFLATE` from the compressChunk input port | Unit Test
 
 ## Change Log
 | Date | Description |
 |---|---|
-|---| Initial Draft |
+|04/14/2026| Initial Draft |
