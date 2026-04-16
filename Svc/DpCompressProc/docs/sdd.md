@@ -10,28 +10,25 @@ See DataProduct subtopology
 ### Diagrams
 
 ```mermaid
-zenuml
-    title Data Product Compression Pipeline
-    DpProducer
-    DpManager
-    DpWriter
-    DpCompressProc
-    DpZLibCompressor
-    @Database filesystem
+sequenceDiagram
     DpProducer->DpManager: DpSend
+    DpManager->>+DpWriter: productSendOut
 
+    DpWriter->>+DpCompressProc: procBufferSendOut
 
-    DpManager->DpWriter.productSendOut {
-        DpWriter->DpCompressProc.procBufferSendOut {
-            status = DpCompressProc->DpZLibCompressor.compressChunk
-            status = DpCompressProc->DpZLibCompressor.compressChunk
-            status = DpCompressProc->DpZLibCompressor.compressChunk
-            return
-        }
+    DpCompressProc->>+DpZLibCompress: compressChunk
+    DpZLibCompress-->>-DpCompressProc: compressed?
 
-        DpWriter->filesystem: Write Product file
-        DpWriter->DpManager: Return buffer
-    }
+    DpCompressProc->>+DpZLibCompress: compressChunk
+    DpZLibCompress-->>-DpCompressProc: compressed?
+
+    DpCompressProc->>+DpZLibCompress: compressChunk
+    DpZLibCompress-->>-DpCompressProc: compressed?
+
+    DpCompressProc-->>-DpWriter:
+
+    DpWriter->>Filesystem: Write File
+    DpWriter->>-DpManager: deallocBufferSendOut
 ```
 
 
@@ -104,7 +101,7 @@ Each compressed chunk is assigned an individual CompressionRecord however multip
 
 
 #### Original Product
-
+```
 +----------+
 |  Header  |
 +----------+
@@ -118,8 +115,9 @@ Each compressed chunk is assigned an individual CompressionRecord however multip
 +----------+
 | Record N |
 +----------+
-
+```
 is chunked to the following where (C) are compressible chunks and (U) are uncompressible chunks. The chunkink does not take the original record structure into account.
+```
 +-------------+
 |   Header    |
 +-------------+
@@ -131,27 +129,28 @@ is chunked to the following where (C) are compressible chunks and (U) are uncomp
 +-------------+
 | Chunk 4 (C) | 
 +-------------+
-
+```
 Is turned into the following compressed data product
+```
 +-------------+
 |   Header    |
 +-------------+
-|  Compessed  |
+|  Compressed |
 |   Record 1  |
 |   Metadata  |
-| Chunk 1 (C) | 
+|   Chunk 1   |
 +-------------+
-|  Compessed  |
+| Uncompressed|
 |   Record 2  |
 |   Metadata  |
 | Chunks 2 & 3|
 +-------------+
-|  Compessed  |
+|  Compressed |
 |   Record 3  |
 |   Metadata  |
 | Chunk 3 (C) | 
 +-------------+
-
+```
 The compressed product is guaranteed to be no larger than the original data product
 
 ## Change Log
